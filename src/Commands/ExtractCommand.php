@@ -234,8 +234,8 @@ class ExtractCommand extends Command
                 $currentFilteredKeys = array_replace_recursive($newKeys, $currentKeysCleanedUp);
 
                 $processedKeys[$translationKeyFileReplaced] = array_merge(
-                    $currentFilteredKeys,
                     $processedKeys[$translationKeyFileReplaced] ?? [],
+                    $currentFilteredKeys,
                 );
             }
 
