@@ -132,13 +132,12 @@ class ExtractCommand extends Command
 
         $io->info("Processing languages and keys...");
 
-        $processedTranslationFiles = [];
-
         foreach ($locales as $locale) {
             $io->info(sprintf("Processing translations for '%s'", $locale));
 
             $localeDirectory = null;
             $translationKeyFile = null;
+            $processedTranslationFiles = [];
 
             switch($saveFormat) {
                 case 'locale_and_first_key':
@@ -151,13 +150,18 @@ class ExtractCommand extends Command
                     }
 
                     $translationKeyFile = "$localeDirectory/{key_name}.$outputFormat";
-                    $processedTranslationFiles[$locale] = array_flip(glob("$localeDirectory/*.$outputFormat"));
+
+                    $processedTranslationFiles[$locale] = array_flip(
+                        glob("$localeDirectory/*.$outputFormat")
+                    );
 
                     break;
 
                 case 'locale':
                     $localeDirectory = $translationsStorePath;
+
                     $translationKeyFile = "$localeDirectory/$locale.$outputFormat";
+
                     $processedTranslationFiles[$locale] = $translationKeyFile;
 
                     break;
@@ -170,42 +174,36 @@ class ExtractCommand extends Command
             // collect and merge all keys
 
             $processedKeys = [];
-            $currentKeys = [];
 
             foreach ($matchesFound as $keyName => $keys) {
-                $translationKeyFileReplaced = str_replace(
-                    ['{key_name}'],
-                    [$keyName],
-                    $translationKeyFile
-                );
+                $translationKeyFileReplaced = str_replace(['{key_name}'], [$keyName], $translationKeyFile);
+                $currentKeys = [];
 
-                if ($currentKeys === []) {
-                    switch ($outputFormat) {
-                        case 'php':
-                            if (!$fileSystem->exists($translationKeyFileReplaced)) {
-                                file_put_contents($translationKeyFileReplaced, "<?php\n\nreturn [];");
+                switch ($outputFormat) {
+                    case 'php':
+                        if (! $fileSystem->exists($translationKeyFileReplaced)) {
+                            file_put_contents($translationKeyFileReplaced, "<?php\n\nreturn [];");
 
-                                $io->success(sprintf("File '%s' created.", $translationKeyFileReplaced));
-                            }
+                            $io->success(sprintf("File '%s' created.", $translationKeyFileReplaced));
+                        }
 
-                            $currentKeys = require $translationKeyFileReplaced;
+                        $currentKeys = require $translationKeyFileReplaced;
 
-                            break;
+                        break;
 
-                        case 'json':
-                            if (!$fileSystem->exists($translationKeyFileReplaced)) {
-                                file_put_contents($translationKeyFileReplaced, "{}");
+                    case 'json':
+                        if (! $fileSystem->exists($translationKeyFileReplaced)) {
+                            file_put_contents($translationKeyFileReplaced, "{}");
 
-                                $io->success(sprintf("File '%s' created.", $translationKeyFileReplaced));
-                            }
+                            $io->success(sprintf("File '%s' created.", $translationKeyFileReplaced));
+                        }
 
-                            $currentKeys = json_decode(
-                                file_get_contents($translationKeyFileReplaced),
-                                true
-                            ) ?? [];
+                        $currentKeys = json_decode(
+                            file_get_contents($translationKeyFileReplaced),
+                            true
+                        ) ?? [];
 
-                            break;
-                    }
+                        break;
                 }
 
                 $newKeys = [];
@@ -231,19 +229,15 @@ class ExtractCommand extends Command
                 $currentKeysCleanedUp = Helpers::arrayDiffKeyRecursive($currentKeys, $newKeys, $deletedKeys);
 
                 // merge current filtered array with the new keys
-                $currentFilteredKeys = array_replace_recursive($newKeys, $currentKeysCleanedUp);
-
                 $processedKeys[$translationKeyFileReplaced] = array_merge(
                     $processedKeys[$translationKeyFileReplaced] ?? [],
-                    $currentFilteredKeys,
+                    array_replace_recursive($newKeys, $currentKeysCleanedUp)
                 );
             }
 
             // save data
 
             foreach ($processedKeys as $fileName => $keys) {
-                $allKeysNewFile = '';
-
                 // sort array by key name
                 ksort($keys);
 
@@ -260,6 +254,9 @@ class ExtractCommand extends Command
                         $allKeysNewFile = json_encode($keys, JSON_PRETTY_PRINT);
 
                         break;
+
+                    default:
+                        $allKeysNewFile = '';
                 }
 
                 file_put_contents($fileName, $allKeysNewFile);
