@@ -6,8 +6,9 @@ declare(strict_types=1);
 $possibleFiles = [
     __DIR__ . '/../../autoload.php',
     __DIR__ . '/../autoload.php',
+    __DIR__ . '/../../../autoload.php',
     __DIR__ . '/vendor/autoload.php',
-    __DIR__ . '/../vendor/autoload.php'
+    __DIR__ . '/../vendor/autoload.php',
 ];
 
 $file = null;
