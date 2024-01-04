@@ -1,0 +1,37 @@
+{
+  "name": "esstdev/translation-extractor",
+  "type": "project",
+  "homepage": "https://esst.lu/",
+  "license": "proprietary",
+  "require": {
+    "php": "^8.3",
+    "symfony/console": "^6.0 | ^7.0",
+    "symfony/filesystem": "^6.0 | ^7.0",
+    "symfony/var-exporter": "^6.0 | ^7.0",
+    "vlucas/phpdotenv": "^5.0"
+  },
+  "require-dev": {
+    "friendsofphp/php-cs-fixer": "^3.0",
+    "symfony/var-dumper": "^6.0 | ^7.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "Esst\\TranslationExtractor\\": "src"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Esst\\TranslationExtractor\\Test\\": "tests/"
+    }
+  },
+  "minimum-stability": "dev",
+  "prefer-stable": true,
+  "config": {
+    "sort-packages": true,
+    "preferred-install": "dist"
+  },
+  "scripts": {
+    "translation-extractor": "php ./bin/translation-extractor.php",
+    "cs-fixer": "vendor/bin/php-cs-fixer fix --allow-risky=yes"
+  }
+}

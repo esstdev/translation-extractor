@@ -1,0 +1,8 @@
+/vendor
+.DS_Store
+.idea
+Thumbs.db
+*.env
+*.log
+composer.lock
+.php-cs-fixer.cache
