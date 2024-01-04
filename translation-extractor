@@ -31,7 +31,7 @@ use Esst\TranslationExtractor\Commands\ExtractCommand;
 use Symfony\Component\Console\Application;
 
 $dotEnv = Dotenv\Dotenv::createUnsafeImmutable(
-    dirname(__DIR__),
+    __DIR__,
     ['.env', '.env.dist']
 );
 $dotEnv->load();
