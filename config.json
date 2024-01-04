@@ -1,8 +1,9 @@
 {
-  "format": "php",
+  "output_format": "php",
   "regex_patterns": [],
   "search_paths": [],
-  "lang_path": "lang/",
   "locales": [],
-  "ignore_files": []
+  "translations_store_path": "",
+  "ignore_files": [],
+  "save_format": "locale"
 }
