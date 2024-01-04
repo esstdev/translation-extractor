@@ -3,7 +3,28 @@
 
 declare(strict_types=1);
 
-require_once dirname(__DIR__) . '/vendor/autoload.php';
+$possibleFiles = [
+    __DIR__ . '/../../autoload.php',
+    __DIR__ . '/../autoload.php',
+    __DIR__ . '/vendor/autoload.php',
+    __DIR__ . '/../vendor/autoload.php'
+];
+
+$file = null;
+
+foreach ($possibleFiles as $possibleFile) {
+    if (file_exists($possibleFile)) {
+        $file = $possibleFile;
+
+        break;
+    }
+}
+
+if ($file === null) {
+    throw new RuntimeException('Unable to locate autoload.php file.');
+}
+
+require_once $file;
 
 use Esst\TranslationExtractor\Commands\ExtractCommand;
 use Symfony\Component\Console\Application;
