@@ -6,7 +6,7 @@ RUN apk add --no-cache --update \
     addgroup -g 1000 -S noroot; \
     adduser -u 1000 -S noroot -G noroot --home /home/noroot --shell /bin/bash; \
     rm -rf /tmp/*; \
-    mkdir -p /home/noroot/src; \
+    mkdir -p /app /home/noroot/src; \
     chown -R noroot:noroot /app /home/noroot;
 
 COPY --chown=noroot:noroot . /app
