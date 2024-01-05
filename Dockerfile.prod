@@ -1,0 +1,14 @@
+FROM php:8.3-cli-alpine3.19
+
+RUN apk add --no-cache --update \
+      bash \
+    ; \
+    addgroup -g 1000 -S noroot; \
+    adduser -u 1000 -S noroot -G noroot --home /home/noroot --shell /bin/bash; \
+    rm -rf /tmp/*; \
+    mkdir -p /home/noroot/src; \
+    chown -R noroot:noroot /app /home/noroot;
+
+COPY --chown=noroot:noroot . /app
+
+WORKDIR /app
