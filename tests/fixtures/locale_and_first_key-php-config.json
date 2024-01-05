@@ -1,0 +1,13 @@
+{
+  "output_format": "php",
+  "regex_patterns": [
+    "/[^\\w\\d](?:__|trans|@lang|trans_choice)\\([\"\\'](.*?)[\"\\']/sum"
+  ],
+  "search_paths": [
+    "testapp"
+  ],
+  "locales": ["fr", "de", "en", "pt"],
+  "translations_store_path": "lang",
+  "ignore_files": [],
+  "save_format": "locale_and_first_key"
+}

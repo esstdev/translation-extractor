@@ -36,22 +36,20 @@ class ExtractCommand extends Command
         $fileSystem = new Filesystem();
         $io = new SymfonyStyle($input, $output);
 
-        $defaultConfigFile = __DIR__ . '/../../config.json';
-        $defaultConfigFileContent = file_get_contents($defaultConfigFile);
-        $defaultConfig = json_decode($defaultConfigFileContent);
+        $configFile = $input->getOption('config');
 
-        $configFile = $input->getOption('config') ?? getenv('TRANSLATION_EXTRACTOR_CONFIG');
-
-        $configFile = empty($configFile) ? $defaultConfigFile : $configFile;
+        if (! empty(getenv('TRANSLATION_EXTRACTOR_CONFIG'))) {
+            $configFile = getenv('TRANSLATION_EXTRACTOR_CONFIG');
+        }
 
         if (! $fileSystem->exists($configFile)) {
-            $io->error(sprintf("Config file does not exist. File: '%s'", $configFile));
+            $io->error("Config file does not exist.");
 
             return Command::FAILURE;
         }
 
         if (! is_file($configFile)) {
-            $io->error("Invalid config file.");
+            $io->error("Config file is not a file.");
 
             return Command::FAILURE;
         }
@@ -66,13 +64,13 @@ class ExtractCommand extends Command
 
         $config = json_decode($configFileContent, true);
 
-        $regexPatterns = $config['regex_patterns'];
-        $searchPaths = $config['search_paths'];
-        $translationsStorePath = $config['translations_store_path'];
-        $locales = $config['locales'];
-        $ignoreFiles = $config['ignore_files'];
-        $outputFormat = $config['output_format'];
-        $saveFormat = $config['save_format'];
+        $regexPatterns = $config['regex_patterns'] ?? [];
+        $searchPaths = $config['search_paths'] ?? [];
+        $translationsStorePath = $config['translations_store_path'] ?? null;
+        $locales = $config['locales'] ?? [];
+        $ignoreFiles = $config['ignore_files'] ?? [];
+        $outputFormat = $config['output_format'] ?? 'php';
+        $saveFormat = $config['save_format'] ?? 'locale';
 
         $filesProcessedCount = 0;
         $matchesFoundCount = 0;
