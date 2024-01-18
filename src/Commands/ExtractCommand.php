@@ -208,7 +208,7 @@ class ExtractCommand extends Command
                 foreach ($keys as $key) {
                     // merge arrays and un-dot keys
                     // this will generate a multidimensional array if more than 1 namespace in the key
-                    if ($locale === 'en' || $locale === 'en_US') {
+                    if ($locale === 'en' || $locale === 'en_US' || $locale === 'en-US') {
                         $lastKeyName = ucfirst(
                             str_replace(
                                 '_',
