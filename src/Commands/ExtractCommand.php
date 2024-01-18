@@ -249,7 +249,7 @@ class ExtractCommand extends Command
                         break;
 
                     case 'json':
-                        $allKeysNewFile = json_encode($keys, JSON_PRETTY_PRINT);
+                        $allKeysNewFile = json_encode($keys, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
 
                         break;
 
