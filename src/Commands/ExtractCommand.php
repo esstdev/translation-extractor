@@ -71,6 +71,7 @@ class ExtractCommand extends Command
         $ignoreFiles = $config['ignore_files'] ?? [];
         $outputFormat = $config['output_format'] ?? 'php';
         $saveFormat = $config['save_format'] ?? 'locale_and_first_key';
+        $ignoreKeys = $config['ignore_keys'] ?? [];
 
         $filesProcessedCount = 0;
         $matchesFoundCount = 0;
@@ -93,26 +94,23 @@ class ExtractCommand extends Command
                 $content = file_get_contents($filePathName);
 
                 foreach ($regexPatterns as $regex) {
-                    preg_match_all($regex, $content, $matches);
+                    preg_match_all($regex, $content, $keyMatches);
 
-                    if ($matches[1] === []) {
+                    if ($keyMatches[1] === []) {
                         continue;
                     }
 
-                    $filteredKeys = [];
-
-                    foreach ($matches[1] as $match) {
-                        foreach ($config['ignore_keys_containing'] ?? [] as $ignored_key) {
-                            if (str_contains($match, $ignored_key)) {
-                                continue;
+                    // ignore keys
+                    foreach ($keyMatches[1] as $i => $key) {
+                        foreach ($ignoreKeys as $ignoredKey) {
+                            if (str_starts_with($key, $ignoredKey)) {
+                                unset($keyMatches[1][$i]);
                             }
-
-                            $filteredKeys[] = $match;
                         }
                     }
 
-                    foreach ($filteredKeys as $match) {
-                        $splitString = explode('.', $match);
+                    foreach ($keyMatches[1] as $key) {
+                        $splitString = explode('.', $key);
 
                         $moduleName = $splitString[0];
 
@@ -124,7 +122,7 @@ class ExtractCommand extends Command
                         // reset array
                         $splitString = implode('.', $splitString);
 
-                        $matchesFound[$moduleName][$match] = $splitString;
+                        $matchesFound[$moduleName][$key] = $splitString;
 
                         $matchesFoundCount++;
                     }
@@ -177,7 +175,11 @@ class ExtractCommand extends Command
                 unset($processedTranslationFiles[$locale][$localeDirectory . $ignoreFile]);
             }
 
-            // collect and merge all keys
+            foreach ($ignoreKeys as $ignoredKey) {
+                unset($processedTranslationFiles[$locale][$localeDirectory . DIRECTORY_SEPARATOR . $ignoredKey . '.php']);
+            }
+
+             // collect and merge all keys
 
             $processedKeys = [];
 
