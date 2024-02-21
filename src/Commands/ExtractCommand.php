@@ -99,7 +99,19 @@ class ExtractCommand extends Command
                         continue;
                     }
 
+                    $filteredKeys = [];
+
                     foreach ($matches[1] as $match) {
+                        foreach ($config['ignore_keys_containing'] ?? [] as $ignored_key) {
+                            if (str_contains($match, $ignored_key)) {
+                                continue;
+                            }
+
+                            $filteredKeys[] = $match;
+                        }
+                    }
+
+                    foreach ($filteredKeys as $match) {
                         $splitString = explode('.', $match);
 
                         $moduleName = $splitString[0];
