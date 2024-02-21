@@ -110,11 +110,15 @@ class ExtractCommand extends Command
                     }
 
                     foreach ($keyMatches[1] as $key) {
+                        if (! str_contains($key, '.')) {
+                            continue;
+                        }
+
                         $splitString = explode('.', $key);
 
                         $moduleName = $splitString[0];
 
-                        if ($saveFormat !== 'locale' && count($splitString) > 1) {
+                        if ($saveFormat !== 'locale') {
                             // remove module name
                             unset($splitString[0]);
                         }
