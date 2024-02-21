@@ -70,7 +70,7 @@ class ExtractCommand extends Command
         $locales = $config['locales'] ?? [];
         $ignoreFiles = $config['ignore_files'] ?? [];
         $outputFormat = $config['output_format'] ?? 'php';
-        $saveFormat = $config['save_format'] ?? 'locale';
+        $saveFormat = $config['save_format'] ?? 'locale_and_first_key';
 
         $filesProcessedCount = 0;
         $matchesFoundCount = 0;
@@ -100,15 +100,11 @@ class ExtractCommand extends Command
                     }
 
                     foreach ($matches[1] as $match) {
-                        if (! str_contains($match, '.')) {
-                            continue;
-                        }
-
                         $splitString = explode('.', $match);
 
                         $moduleName = $splitString[0];
 
-                        if ($saveFormat !== 'locale') {
+                        if ($saveFormat !== 'locale' && count($splitString) > 1) {
                             // remove module name
                             unset($splitString[0]);
                         }
@@ -220,7 +216,7 @@ class ExtractCommand extends Command
                         $lastKeyName = null;
                     }
 
-                    $newKeys = array_merge_recursive($newKeys, Helpers::arrayUndot([$key => $lastKeyName]));
+                    $newKeys = array_merge($newKeys, [$key => $lastKeyName]);
                 }
 
                 // clean the old array by removing unused keys recursively
@@ -267,19 +263,19 @@ class ExtractCommand extends Command
                     unset($processedTranslationFiles[$locale][$fileName]);
                 }
             }
-        }
 
-        /*if ($currentTranslationFiles !== []) {
-            foreach ($currentTranslationFiles as $currentTranslationFile) {
-                if ($currentTranslationFile === []) {
-                    continue;
+            if ($processedTranslationFiles !== []) {
+                foreach ($processedTranslationFiles as $currentTranslationFile) {
+                    if ($currentTranslationFile === []) {
+                        continue;
+                    }
+
+                    $fileSystem->remove(array_flip($currentTranslationFile));
+
+                    $io->warning(sprintf("File deleted [[ %s ]].", json_encode($currentTranslationFile)));
                 }
-
-                $this->fileSystem->remove(array_flip($currentTranslationFile));
-
-                $this->io->warning(sprintf("Some files were deleted [[ %s ]].", json_encode($currentTranslationFile)));
             }
-        }*/
+        }
 
         return Command::SUCCESS;
     }
