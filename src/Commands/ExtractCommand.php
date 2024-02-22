@@ -180,7 +180,7 @@ class ExtractCommand extends Command
             }
 
             foreach ($ignoreKeys as $ignoredKey) {
-                unset($processedTranslationFiles[$locale][$localeDirectory . DIRECTORY_SEPARATOR . $ignoredKey . '.php']);
+                unset($processedTranslationFiles[$locale][$localeDirectory . DIRECTORY_SEPARATOR . $ignoredKey . '.' . $outputFormat]);
             }
 
              // collect and merge all keys
