@@ -185,7 +185,7 @@ class ExtractCommand extends Command
                 }
             }
 
-             // collect and merge all keys
+            // collect and merge all keys
 
             $processedKeys = [];
 

@@ -38,5 +38,6 @@ $dotEnv->load();
 
 $application = new Application();
 $application->add(new ExtractCommand());
+$application->add(new \Esst\TranslationExtractor\Commands\ExtractCommandNew());
 $application->run();
 

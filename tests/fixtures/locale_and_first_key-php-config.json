@@ -1,17 +1,17 @@
 {
-  "output_format": "php",
-  "regex_patterns": [
+  "outputFormat": "php",
+  "regexPatterns": [
       "/[^\\w\\d](?:__|trans|@lang|trans_choice)\\([\"\\'](.*?)[\"\\']/sum",
       "/\\@label\\(key: [\"\\'](.*?)[\"\\']\\)/sum",
       "/[\"\\']label[\"\\']\\s*=>\\s*[\"\\'](.*?)[\"\\']/sum",
       "/\\#\\[Label\\([\"\\'](.*?)[\\\"\\']\\)\\]/sum",
       "/[^\\w\\d](?:t)\\([\"\\'](.*?)[\"\\']/sum"
   ],
-  "search_paths": [
+  "searchPaths": [
     "/app/tests/fixtures/testapp"
   ],
   "locales": ["fr", "de", "en", "pt"],
-  "translations_store_path": "/app/tests/fixtures/lang",
-  "ignore_files": [],
-  "save_format": "locale_and_first_key"
+  "translationsStorePath": "/app/tests/fixtures/lang",
+  "ignoreFiles": [],
+  "saveFormat": "locale_and_first_key"
 }
