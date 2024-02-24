@@ -1,41 +1,43 @@
 <?php
 
-namespace Esst\TranslationExtractor;
+declare(strict_types=1);
 
-use Esst\TranslationExtractor\Data\ConfigData;
-use Symfony\Component\Console\Style\SymfonyStyle;
-use Symfony\Component\Filesystem\Filesystem;
+namespace Esst\TranslationExtractor\Parser;
 
-class ExtractedKeysProcessor
+use Esst\TranslationExtractor\Helpers;
+use Esst\TranslationExtractor\Loader\ConfigLoader;
+use Esst\TranslationExtractor\Loader\CurrentFileKeysLoader;
+use Esst\TranslationExtractor\LocaleDirectoryManager;
+
+class ExtractedKeysParser
 {
     private array $processedKeys = [];
 
     public function __construct(
-        private array $extractedKeys,
-        private LocaleDirectoryManager $localeDirectoryManager,
-        private ConfigData $config,
-        private Filesystem $filesystem,
-        private SymfonyStyle $io,
+        private readonly array $extractedKeys,
+        private readonly LocaleDirectoryManager $localeDirectoryManager,
+        private readonly ConfigLoader $config,
     ) {
     }
 
     public function process(): void
     {
-        $currentFileKeysParser = new CurrentFileKeysParser(
-            config: $this->config,
-            filesystem: $this->filesystem,
-            io: $this->io
-        );
-
-        $locale = $this->localeDirectoryManager->locale;
+        $locale = $this->localeDirectoryManager->getLocale();
         $translationKeyFile = $this->localeDirectoryManager->getTranslationKeyFile();
 
+        $currentFileKeysParser = new CurrentFileKeysLoader(
+            file: $translationKeyFile,
+            config: $this->config
+        );
+
         foreach ($this->extractedKeys as $keyName => $keys) {
-            $translationKeyFile = str_replace(['{key_name}'], [$keyName], $translationKeyFile);
+            $translationKeyFileReplaced = str_replace(['{key_name}'], [$keyName], $translationKeyFile);
 
-            $currentFileKeysParser->parseOnce($translationKeyFile);
+            $currentFileKeysParser->setFile($translationKeyFileReplaced);
 
-            $currentKeys = $currentFileKeysParser->get($translationKeyFile);
+            $currentFileKeysParser->parse();
+
+            $currentKeys = $currentFileKeysParser->get();
 
             $newKeys = [];
             foreach ($keys as $key) {
@@ -53,8 +55,8 @@ class ExtractedKeysProcessor
             $currentKeysCleanedUp = Helpers::arrayDiffKeyRecursive($currentKeys, $newKeys, $deletedKeys);
 
             // merge current filtered array with the new keys
-            $this->processedKeys[$translationKeyFile] = array_merge(
-                $this->processedKeys[$translationKeyFile] ?? [],
+            $this->processedKeys[$translationKeyFileReplaced] = array_merge(
+                $this->processedKeys[$translationKeyFileReplaced] ?? [],
                 array_replace_recursive($newKeys, $currentKeysCleanedUp)
             );
         }

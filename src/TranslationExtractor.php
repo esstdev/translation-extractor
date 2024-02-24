@@ -1,65 +1,57 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Esst\TranslationExtractor;
 
-use Esst\TranslationExtractor\Data\ConfigData;
-use Esst\TranslationExtractor\Extractors\KeyExtractor;
-use Symfony\Component\Console\Style\SymfonyStyle;
-use Symfony\Component\Filesystem\Filesystem;
+use Esst\TranslationExtractor\Extractor\KeyExtractor;
+use Esst\TranslationExtractor\Loader\ConfigLoader;
+use Esst\TranslationExtractor\Writer\TranslationKeysWriter;
 
 class TranslationExtractor
 {
     public function __construct(
-        private ConfigData $config,
-        private SymfonyStyle $io,
-        private Filesystem $fileSystem,
+        private ConfigLoader $config
     ) {
     }
 
-    public function process()
+    public function process(): void
     {
-        $keyExtractor = new KeyExtractor(
-            config: $this->config,
-            io: $this->io
-        );
+        $keyExtractor = new KeyExtractor($this->config);
 
         $keyExtractor->extract();
 
         $extractedKeys = $keyExtractor->getKeys();
 
-        $this->io->info("Processing languages and keys...");
+        $this->config->io->info("Processing locales...");
 
-        foreach ($this->config->locales as $locale) {
-            $this->io->info(sprintf("Processing translations for locale: '%s'", $locale));
+        foreach ($this->config->configData->locales as $locale) {
+            $this->config->io->info(sprintf("Processing translations for locale: '%s'", $locale));
 
             $localeDirectoryManager = new LocaleDirectoryManager(
                 locale: $locale,
-                config: $this->config,
-                io: $this->io,
-                fileSystem: $this->fileSystem
+                config: $this->config
             );
 
-            $localeDirectoryManager->findFiles();
+            $localeDirectoryManager->listFiles();
 
-            $extractedKeysProcessor = new ExtractedKeysProcessor(
-                extractedKeys: $extractedKeys,
-                localeDirectoryManager: $localeDirectoryManager,
-                config: $this->config,
-                filesystem: $this->fileSystem,
-                io: $this->io
-            );
-
-            $extractedKeysProcessor->process();
-
-            dd($extractedKeysProcessor);
             $translationKeysWriter = new TranslationKeysWriter(
-                processedKeys: $extractedKeysProcessor->get(),
+                extractedKeys: $extractedKeys,
                 config: $this->config,
                 localeDirectoryManager: $localeDirectoryManager,
-                io: $this->io
             );
 
             $translationKeysWriter->write();
+
+            foreach ($localeDirectoryManager->getTranslationFiles() as $currentTranslationFile) {
+                if ($currentTranslationFile === []) {
+                    continue;
+                }
+
+                $this->config->fileSystem->remove(array_flip($currentTranslationFile));
+
+                $this->config->io->warning(sprintf("File deleted [[ %s ]].", json_encode($currentTranslationFile)));
+            }
         }
     }
 }

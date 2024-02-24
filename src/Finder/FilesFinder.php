@@ -1,29 +1,32 @@
 <?php
 
-namespace Esst\TranslationExtractor\Loaders;
+declare(strict_types=1);
 
-use Esst\TranslationExtractor\Data\ConfigData;
+namespace Esst\TranslationExtractor\Finder;
+
+use Esst\TranslationExtractor\Loader\ConfigLoader;
 use FilesystemIterator;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use SplFileInfo;
-use Symfony\Component\Console\Style\SymfonyStyle;
 
-class FileLoader
+class FilesFinder
 {
     public function __construct(
-        private ConfigData $config,
-        private SymfonyStyle $io
+        private ConfigLoader $config,
     ) {
     }
 
-    public function getFiles(): array
+    /**
+     * @return array<int, string>
+     */
+    public function find(): array
     {
         $files = [];
 
-        $this->io->info("Loading files...");
+        $this->config->io->info("Loading files...");
 
-        foreach ($this->config->searchPaths as $folder) {
+        foreach ($this->config->configData->searchPaths as $folder) {
             $recursiveDirectoryIterator = new RecursiveDirectoryIterator($folder);
             $recursiveDirectoryIterator->setFlags(FilesystemIterator::SKIP_DOTS);
 

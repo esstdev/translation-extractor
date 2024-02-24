@@ -1,10 +1,11 @@
 <?php
 
-namespace Esst\TranslationExtractor\Extractors;
+declare(strict_types=1);
 
-use Esst\TranslationExtractor\Data\ConfigData;
-use Esst\TranslationExtractor\Loaders\FileLoader;
-use Symfony\Component\Console\Style\SymfonyStyle;
+namespace Esst\TranslationExtractor\Extractor;
+
+use Esst\TranslationExtractor\Finder\FilesFinder;
+use Esst\TranslationExtractor\Loader\ConfigLoader;
 
 class KeyExtractor
 {
@@ -14,18 +15,17 @@ class KeyExtractor
     private array $keys = [];
 
     public function __construct(
-        private ConfigData $config,
-        private SymfonyStyle $io,
+        private ConfigLoader $config,
     ) {
     }
 
     public function extract(): void
     {
-        $fileLoader = new FileLoader($this->config, $this->io);
+        $fileLoader = new FilesFinder($this->config);
 
-        $files = $fileLoader->getFiles();
+        $files = $fileLoader->find();
 
-        $this->io->info("Extracting keys from files...");
+        $this->config->io->info("Extracting keys from files...");
 
         $filesProcessedCount = 0;
         $matchesFoundCount = 0;
@@ -33,7 +33,7 @@ class KeyExtractor
         foreach ($files as $filePathName) {
             $content = file_get_contents($filePathName);
 
-            foreach ($this->config->regexPatterns as $regex) {
+            foreach ($this->config->configData->regexPatterns as $regex) {
                 preg_match_all($regex, $content, $keyMatches);
 
                 if ($keyMatches[1] === []) {
@@ -41,7 +41,7 @@ class KeyExtractor
                 }
 
                 foreach ($keyMatches[1] as $i => $key) {
-                    foreach ($this->config->ignoreKeys as $ignoredKey) {
+                    foreach ($this->config->configData->ignoreKeys as $ignoredKey) {
                         if (str_starts_with($key, $ignoredKey)) {
                             unset($keyMatches[1][$i]);
                         }
@@ -56,7 +56,7 @@ class KeyExtractor
                     $splitString = explode('.', $key);
                     $moduleName = $splitString[0];
 
-                    if ($this->config->saveFormat !== 'locale') {
+                    if ($this->config->configData->saveFormat !== 'locale') {
                         unset($splitString[0]);
                     }
 
@@ -71,7 +71,7 @@ class KeyExtractor
             $filesProcessedCount++;
         }
 
-        $this->io->success(sprintf('Extracted %s keys from %s files.', $matchesFoundCount, $filesProcessedCount));
+        $this->config->io->success(sprintf('Extracted %s keys from %s files.', $matchesFoundCount, $filesProcessedCount));
     }
 
     /**

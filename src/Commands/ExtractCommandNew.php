@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Esst\TranslationExtractor\Commands;
 
-use Esst\TranslationExtractor\Loaders\ConfigLoader;
+use Esst\TranslationExtractor\Loader\ConfigLoader;
 use Esst\TranslationExtractor\TranslationExtractor;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -33,9 +33,9 @@ class ExtractCommandNew extends Command
         $io = new SymfonyStyle($input, $output);
 
         $configLoader = new ConfigLoader($fileSystem, $io);
-        $config = $configLoader->load($input->getOption('config'));
+        $configLoader->load($input->getOption('config'));
 
-        $translationExtractorProcessor = new TranslationExtractor($config, $io, $fileSystem);
+        $translationExtractorProcessor = new TranslationExtractor($configLoader);
         $translationExtractorProcessor->process();
 
         return Command::SUCCESS;

@@ -10,7 +10,7 @@
   "searchPaths": [
     "/app/tests/fixtures/testapp"
   ],
-  "locales": ["fr", "de", "en", "pt"],
+  "locales": ["en", "fr", "de", "en", "pt"],
   "translationsStorePath": "/app/tests/fixtures/lang",
   "ignoreFiles": [],
   "saveFormat": "locale_and_first_key"

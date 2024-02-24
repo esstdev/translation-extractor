@@ -4,34 +4,35 @@ declare(strict_types=1);
 
 namespace Esst\TranslationExtractor;
 
-use Esst\TranslationExtractor\Data\ConfigData;
-use Symfony\Component\Console\Style\SymfonyStyle;
-use Symfony\Component\Filesystem\Filesystem;
+use Esst\TranslationExtractor\Loader\ConfigLoader;
 
 class LocaleDirectoryManager
 {
-    public array $files = [];
+    private array $files = [];
 
     public function __construct(
-        public string $locale,
-        public ConfigData $config,
-        private SymfonyStyle $io,
-        private Filesystem $fileSystem
+        private string $locale,
+        private ConfigLoader $config,
     ) {
     }
 
-    public function findFiles(): void
+    public function listFiles(): void
     {
-        switch ($this->config->saveFormat) {
+        switch ($this->config->configData->saveFormat) {
             case 'locale_and_first_key':
                 $this->files[$this->locale] = array_flip(
-                    glob("{$this->getDirectory()}/*.{$this->config->outputFormat}")
+                    glob("{$this->getDirectory()}/*.{$this->config->configData->outputFormat}")
                 );
 
                 break;
 
             case 'locale':
-                $this->files[$this->locale] = "{$this->getDirectory()}/{$this->locale}.{$this->config->outputFormat}";
+                $this->files[$this->locale] = sprintf(
+                    "%s/%s.%s",
+                    $this->getDirectory(),
+                    $this->locale,
+                    $this->config->configData->outputFormat
+                );
 
                 break;
         }
@@ -39,16 +40,16 @@ class LocaleDirectoryManager
 
     public function getDirectory(): string
     {
-        $localeDirectory = match ($this->config->saveFormat) {
-            'locale_and_first_key' => sprintf('%s/%s', $this->config->translationsStorePath, $this->locale),
-            'locale' => $this->config->translationsStorePath,
-            default => throw new \InvalidArgumentException("Invalid save format: {$this->config->saveFormat}"),
+        $localeDirectory = match ($this->config->configData->saveFormat) {
+            'locale_and_first_key' => sprintf('%s/%s', $this->config->configData->translationsStorePath, $this->locale),
+            'locale' => $this->config->configData->translationsStorePath,
+            default => throw new \InvalidArgumentException("Invalid save format: {$this->config->configData->saveFormat}"),
         };
 
-        if (! $this->fileSystem->exists($localeDirectory)) {
-            $this->fileSystem->mkdir($localeDirectory);
+        if (! $this->config->fileSystem->exists($localeDirectory)) {
+            $this->config->fileSystem->mkdir($localeDirectory);
 
-            $this->io->success(sprintf("Path '%s' created.", $localeDirectory));
+            $this->config->io->success(sprintf("Path '%s' created.", $localeDirectory));
         }
 
         return $localeDirectory;
@@ -57,9 +58,9 @@ class LocaleDirectoryManager
     public function getTranslationKeyFile(): null | string
     {
         $localeDirectory = $this->getDirectory();
-        $outputFormat = $this->config->outputFormat;
+        $outputFormat = $this->config->configData->outputFormat;
 
-        return match ($this->config->saveFormat) {
+        return match ($this->config->configData->saveFormat) {
             'locale_and_first_key' => $localeDirectory . "/{key_name}.{$outputFormat}",
             'locale' => $localeDirectory . "/{$this->locale}.{$outputFormat}",
             default => null
@@ -68,17 +69,22 @@ class LocaleDirectoryManager
 
     public function getTranslationFiles(): array
     {
-        foreach ($this->config->ignoreKeys as $ignoreFile) {
+        foreach ($this->config->configData->ignoreKeys as $ignoreFile) {
             $this->removeByLocaleAndFile($this->getDirectory() . $ignoreFile);
         }
 
-        foreach ($this->config->ignoreKeys as $ignoredKey) {
-            if ($this->config->saveFormat === 'locale_and_first_key') {
+        foreach ($this->config->configData->ignoreKeys as $ignoredKey) {
+            if ($this->config->configData->saveFormat === 'locale_and_first_key') {
                 $this->removeByLocaleAndFile($this->getDirectory() . DIRECTORY_SEPARATOR . $ignoredKey . '.php');
             }
         }
 
         return $this->files;
+    }
+
+    public function getLocale(): string
+    {
+        return $this->locale;
     }
 
     public function removeByLocaleAndFile(string $file): void

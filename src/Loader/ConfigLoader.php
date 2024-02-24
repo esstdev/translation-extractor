@@ -1,6 +1,8 @@
 <?php
 
-namespace Esst\TranslationExtractor\Loaders;
+declare(strict_types=1);
+
+namespace Esst\TranslationExtractor\Loader;
 
 use Esst\TranslationExtractor\Data\ConfigData;
 use Symfony\Component\Console\Style\SymfonyStyle;
@@ -8,21 +10,23 @@ use Symfony\Component\Filesystem\Filesystem;
 
 class ConfigLoader
 {
+    public ConfigData $configData;
+
     public function __construct(
-        private Filesystem $fileSystem,
-        private SymfonyStyle $io,
+        public Filesystem $fileSystem,
+        public SymfonyStyle $io,
     ) {
     }
 
-    public function load(string $configFile = null): ConfigData
+    public function load(string $configFile = null): void
     {
         $loadedConfig = $this->loadFile($configFile);
 
         if ($loadedConfig === null) {
-            return new ConfigData();
+            $this->configData = new ConfigData();
         }
 
-        return new ConfigData(
+        $this->configData = new ConfigData(
             outputFormat: $loadedConfig['outputFormat'] ?? null,
             regexPatterns: $loadedConfig['regexPatterns'] ?? [],
             searchPaths: $loadedConfig['searchPaths'] ?? [],
